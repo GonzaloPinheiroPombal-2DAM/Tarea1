@@ -1,4 +1,4 @@
-# Tarea1
+# Tarea Andoid - Ayuda a mayores
 
 Ayuda a Mayores es una aplicación en desarrollo diseñada para facilitar el apoyo a personas mayores que puedan necesitar ayuda con tareas, recados o asistencia personalizada. La aplicación está pensada para que sea una herramienta accesible y fácil de usar, con funcionalidades que permiten interactuar con asistentes o contactos de confianza y anónimos.
 
