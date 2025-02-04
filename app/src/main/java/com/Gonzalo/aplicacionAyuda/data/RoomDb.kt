@@ -22,21 +22,6 @@ data class MainUser(
 )
 
 
-
-//@Dao
-//interface MainUserDao {
-//    @Query("SELECT * FROM MainUser")
-//    fun getAll(): List<MainUser>
-//    @Query("SELECT * FROM user WHERE uid IN (:userIds)")
-//    fun loadAllByIds(userIds: IntArray): List<user>
-//    @Query("SELECT * FROM user WHERE first_name LIKE :first AND " +
-//    "last_name LIKE :last LIMIT 1")
-//    fun findByName(first: String, last: String): User
-//    @Insert
-//    fun insertAll(vararg users: User)
-//    @Delete
-//    fun delete(user: User)
-//}
 @Dao
 interface MainUserDao {
 
@@ -54,7 +39,52 @@ interface MainUserDao {
 }
 
 
-@Database(version = 2, entities = [MainUser::class])
+@Entity(tableName = "contact_data")
+data class ContactData(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @ColumnInfo(name = "contact_name") val contactName: String,
+    @ColumnInfo(name = "contact_telephone") val contactTelephone: Int,
+    @ColumnInfo(name = "contact_nationality") val contactNationality: String)
+
+@Dao
+interface ContactDataDao {
+    //Obtener una lista con todos los contactos
+    @Query("SELECT * FROM contact_data")
+    fun getAllContacts(): List<ContactData>
+
+    // Obtener solo los nombres de todos los contactos
+    @Query("SELECT contact_name FROM contact_data")
+    fun getAllContactNames(): List<String>
+
+    // Obtener solo los números de teléfono de todos los contactos
+    @Query("SELECT contact_telephone FROM contact_data")
+    fun getAllContactTelephones(): List<Int>
+
+    // Obtener solo las nacionalidades de todos los contactos
+    @Query("SELECT contact_nationality FROM contact_data")
+    fun getAllContactNationalities(): List<String>
+
+
+    //Eliminar un contacto en concreto por su id
+    @Query("DELETE FROM contact_data WHERE id = :contactId")
+    fun deleteContactById(contactId: Int)
+
+    //Insertar (crear) un nuevo contacto
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertContact(contact: ContactData)
+}
+
+
+
+//@Database(version = 4, entities = [MainUser::class])
+//abstract class mainUserDataBase : RoomDatabase(){
+//    abstract fun userDao(): MainUserDao
+//    abstract fun ContactDataDao(): ContactDataDao
+//
+//}
+
+@Database(version = 4, entities = [MainUser::class, ContactData::class])
 abstract class mainUserDataBase : RoomDatabase(){
     abstract fun userDao(): MainUserDao
+    abstract fun contactDataDao(): ContactDataDao
 }

@@ -6,10 +6,7 @@
 
 package com.Gonzalo.aplicacionAyuda
 
-import android.content.ContentValues
-import android.database.sqlite.SQLiteOpenHelper
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -24,7 +21,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
@@ -40,53 +36,43 @@ import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.layout.size
-import androidx.lifecycle.lifecycleScope
 import androidx.room.Room
-import com.Gonzalo.aplicacionAyuda.data.AppAyudaDBHelper
-import com.Gonzalo.aplicacionAyuda.data.DATABASE_NAME
-import com.Gonzalo.aplicacionAyuda.data.DATABASE_VERSION
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
+import com.Gonzalo.aplicacionAyuda.data.ContactData
 import com.Gonzalo.aplicacionAyuda.data.MainUser
-import com.Gonzalo.aplicacionAyuda.data.appAyudaDBContract
 import com.Gonzalo.aplicacionAyuda.data.mainUserDataBase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
         setContent {
-            val contactNames = leerBD() // Recuperar los nombres de la base de datos
-            PantallaPrincipal(contactNames)
+            var nombres by remember { mutableStateOf(emptyList<String>()) }
+            LaunchedEffect(Unit) {
+                nombres = leerNombresContactosBDRoom()
+            }
+            PantallaPrincipal(nombres)
         }
 
 
-        //Sqlite
-        borrarBD()
-        crearBD("1", "Gonzalo", 123456789, "Spain")
-        crearBD("2", "Maria", 987654321, "France")
-        crearBD("3", "Carlos", 654321987, "Italy")
-        leerBD()
+//        agregarContacto("Sofia", 123456789, "Spain")
+//        agregarContacto("Maria", 987654321, "France")
+//        agregarContacto("Carlos", 654321987, "Italy")
 
 //      Falta implementar en la aplicación la opcion de eliminar o cambiar de usuario pricipal
 //        borrarBDRoom()
 
         //Room
-        crarBDRoom()
-        leerBDRoom()
+//        crarUsuarioMainBDRoom()
+        leerMainUserBDRoom()
 
-    }
-
-    //Métodos de ciclo de vida (Parte1)
-    override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
-        super.onCreate(savedInstanceState, persistentState)
-
-        //Borro hambas BD para el ejemplo de la tarea
-
-
-        Log.d("Ciclo de vida", "llamdado a onCreate")
     }
 
     override fun onStart(){
@@ -126,65 +112,14 @@ class MainActivity : ComponentActivity() {
     }
 
 
-    //Funiones bases de detos + room
-
-    private fun crearBD(contactId: String, contactName: String, contactTelephone: Int, contactNationality: String) {
-        val dbHelper = AppAyudaDBHelper(this)
-        val db = dbHelper.readableDatabase
-
-        val values = ContentValues().apply {
-            put(appAyudaDBContract.contactsData.ID, contactId)
-            put(appAyudaDBContract.contactsData.CONTACT_NAME, contactName)
-            put(appAyudaDBContract.contactsData.CONTACT_TELEPHONE, contactTelephone)
-            put(appAyudaDBContract.contactsData.CONTACT_NATIONALITY, contactNationality)
-        }
-
-        val result = db.insert(appAyudaDBContract.contactsData.TABLE_NAME, null, values)
-
-        Log.d("Database result", "Database result $result")
-    }
-
-
-    //Funcion que devuelve un String con los nombres de los ususarios en la base de datos
-    private fun leerBD() : List<String>{
-        val dbHelper = AppAyudaDBHelper(this)
-        val db = dbHelper.readableDatabase
-        val projection = arrayOf(
-            appAyudaDBContract.contactsData.CONTACT_NAME,
-            appAyudaDBContract.contactsData.CONTACT_TELEPHONE,
-            appAyudaDBContract.contactsData.CONTACT_NATIONALITY
-        )
-
-        val cursor = db.query(
-            appAyudaDBContract.contactsData.TABLE_NAME,
-            projection,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null
-        )
-
-        val names = mutableListOf<String>()
-        with(cursor){
-            while(cursor.moveToNext()){
-                val name = getString(getColumnIndexOrThrow(appAyudaDBContract.contactsData.CONTACT_NAME))
-                names.add(name)
-//                Log.d("Lectura base de datos","De la base de datos $name")
-
-            }
-        }
-
-        cursor.close()
-        return names
-    }
-
-    private fun crarBDRoom(){
+    //Funcion encargada de generar un usuario main con valores por defecto
+    private fun crarUsuarioMainBDRoom(){
         val db = Room.databaseBuilder(
             applicationContext,
             mainUserDataBase::class.java, "mainUserDB"
-        ).build()
+        )
+            .addMigrations(MIGRATION_2_3, MIGRATION_3_4)
+            .build()
 
         val dao = db.userDao()
 
@@ -202,25 +137,66 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun leerBDRoom(){
+
+    //Funcion encargada de generar un nuevo contacto
+    fun agregarContacto(contactName: String, contactTelephone: Int, contactNationality: String) {
         val db = Room.databaseBuilder(
             applicationContext,
-            mainUserDataBase::class.java, "mainUserDB"
-        ).build()
+            mainUserDataBase::class.java,
+            "mainUserDB"
+        )
+            .addMigrations(MIGRATION_2_3, MIGRATION_3_4)
+            .build()
 
-        val dao = db.userDao()
+        val dao = db.contactDataDao()
 
         CoroutineScope(Dispatchers.IO).launch {
-            val user = dao.getAll()
-
-            user.forEach { user ->
-                Log.d("RoomDBMainUser", "Usuario: ${user.firstName} ${user.lastName1} ${user.lastName2}")
-            }
+            val nuevoContacto = ContactData(
+                contactName = contactName,
+                contactTelephone = contactTelephone,
+                contactNationality = contactNationality
+            )
+            dao.insertContact(nuevoContacto)
+            Log.d("RoomDBContact", "Contacto insertado en Room")
         }
     }
 
 
+    //Funcion encargada de devolver todos los nombres de los contactos
+    private suspend fun leerNombresContactosBDRoom(): List<String> {
+        val db = Room.databaseBuilder(
+            applicationContext,
+            mainUserDataBase::class.java,
+            "mainUserDB" // Asegúrate de usar el mismo nombre en toda la app
+        )
+            .addMigrations(MIGRATION_2_3, MIGRATION_3_4)
+            .build()
 
+        val dao = db.contactDataDao()
+
+        return withContext(Dispatchers.IO) {
+            dao.getAllContactNames()
+        }
+    }
+
+
+    //Funcion encargada de devolver los datos de todos los contactos
+    private suspend fun obtenerContactosBDRoom(): List<ContactData> {
+        val db = Room.databaseBuilder(
+            applicationContext,
+            mainUserDataBase::class.java, "contactosBD"
+        )
+            .addMigrations(MIGRATION_2_3, MIGRATION_3_4)
+            .build()
+
+        val dao = db.contactDataDao()
+        return withContext(Dispatchers.IO) {
+            dao.getAllContacts()
+        }
+    }
+
+
+    //Funcion encargada de borrar los datos del main user
     private fun borrarBDRoom(){
         val db = Room.databaseBuilder(
             applicationContext,
@@ -237,13 +213,24 @@ class MainActivity : ComponentActivity() {
     }
 
 
+    private fun leerMainUserBDRoom(){
+        val db = Room.databaseBuilder(
+            applicationContext,
+            mainUserDataBase::class.java, "mainUserDB"
+        )
+            .addMigrations(MIGRATION_2_3, MIGRATION_3_4)
+            .build()
 
-    private fun borrarBD(){
-        val dbHelper = AppAyudaDBHelper(this)
-        val db = dbHelper.readableDatabase
-        db.delete("${appAyudaDBContract.contactsData.TABLE_NAME}", null, null)
+        val dao = db.userDao()
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val user = dao.getAll()
+
+            user.forEach { user ->
+                Log.d("RoomDBMainUser", "Usuario: ${user.firstName} ${user.lastName1} ${user.lastName2}")
+            }
+        }
     }
-
 }
 
 
@@ -357,6 +344,28 @@ fun MostrarImagen(modifier: Modifier = Modifier) {
     )
 }
 
+
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        // Crear la nueva tabla 'contact_data'
+        database.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `contact_data` (
+                `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                `contact_name` TEXT NOT NULL,
+                `contact_telephone` INTEGER NOT NULL,
+                `contact_nationality` TEXT NOT NULL
+            )
+            """.trimIndent()
+        )
+    }
+}
+
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        // No hay cambios en la estructura
+    }
+}
 
 
 
