@@ -28,7 +28,9 @@ object AppModule {
             context,
             mainUserDataBase::class.java,
             "mainUserDB"
-        ).build()
+        )
+            .addMigrations(MIGRATION_2_4, MIGRATION_3_4, MIGRATION_2_4)
+            .build()
     }
 
     // Proporcionar Retrofit para obtener el clima

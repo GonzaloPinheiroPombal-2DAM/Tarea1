@@ -2,15 +2,15 @@
 
 
 //Cambios realizados:
-//Modificada la estructura del proyecto(Agregada carpeta screens + sus viewModels)
-//Agregadas dependencias hilt
+//Modificada la estructura del proyecto(Agregada carpeta screens y sus viewModels + carptas necesarias hilt)
+//Agregadas dependencias
 //Agregado viewModel para el mainScreen con su logica
-//Usar retrofit con una api y mostrarlo
+//Usar retrofit con una api y mostrarlo dentro del viewmodel
+//Dar uso a hilt
+//Añadir un boton para añadir usuario
 
 
 //Falta
-//Dar uso a hilt
-//Añadir un boton para añadir usuario
 //Borro los .kt de sqlite?
 
 
@@ -25,20 +25,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.Gonzalo.aplicacionAyuda.data.network.WheatherApiService
 import com.Gonzalo.aplicacionAyuda.ui.screens.mainScreen.MainScreenViewModel
 import com.Gonzalo.aplicacionAyuda.ui.screens.mainScreen.PantallaPrincipal
-import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.json.Json
-import okhttp3.MediaType
-import retrofit2.Retrofit
 
 
 
@@ -137,6 +129,22 @@ class MainActivity : ComponentActivity() {
 
 
 val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        // Crear la nueva tabla 'contact_data'
+        database.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `contact_data` (
+                `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                `contact_name` TEXT NOT NULL,
+                `contact_telephone` INTEGER NOT NULL,
+                `contact_nationality` TEXT NOT NULL
+            )
+            """.trimIndent()
+        )
+    }
+}
+
+val MIGRATION_2_4 = object : Migration(2, 4) {
     override fun migrate(database: SupportSQLiteDatabase) {
         // Crear la nueva tabla 'contact_data'
         database.execSQL(

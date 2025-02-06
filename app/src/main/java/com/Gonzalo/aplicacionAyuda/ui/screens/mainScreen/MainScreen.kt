@@ -1,6 +1,5 @@
 package com.Gonzalo.aplicacionAyuda.ui.screens.mainScreen
 
-import android.util.Log
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
@@ -39,18 +38,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.Gonzalo.aplicacionAyuda.R
-import com.Gonzalo.aplicacionAyuda.data.network.WheatherApiService
-import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
-import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.json.Json
-import okhttp3.MediaType
-import retrofit2.Retrofit
 
 //Función encargada de mostrar todo el contenido de la pestaña principal
 @Composable
 fun PantallaPrincipal(contactNames: List<String>, viewModel: MainScreenViewModel) {
     Scaffold(
-        topBar = { barraSuperior { it } },
+        topBar = { barraSuperior(viewModel) { it } },
         bottomBar = { MostrarTiempo(viewModel) },
         content = { innerPadding ->
 
@@ -84,7 +77,7 @@ fun listaLazy(modifier: Modifier = Modifier, names: List<String>) {
 //Funcion encargada de mostrar el contenido del topBar
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun barraSuperior(onOptionSelected: (String) -> Unit) {
+fun barraSuperior(viewModel: MainScreenViewModel, onOptionSelected: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
 
     TopAppBar(
@@ -106,14 +99,13 @@ fun barraSuperior(onOptionSelected: (String) -> Unit) {
                     }
                 )
                 DropdownMenuItem(
-                    text = { Text("Ajustes") },
+                    text = { Text("Agregar Contacto") },
                     onClick = {
                         expanded = false
-                        onOptionSelected("Opción 2")
+                        viewModel.agregarContacto("Nuevo Contacto", 123456789, "Desconocida")
                     }
                 )
             }
-
 
             MostrarImagen()
 
@@ -169,32 +161,6 @@ fun cuadroLista(name: String, modifier: Modifier = Modifier) {
         }
     }
 }
-
-
-//@Composable
-//fun MostrarTiempo(viewModel: MainScreenViewModel) {
-//    val weather by viewModel.weatherState.collectAsState(initial = null)
-//
-//    BottomAppBar(
-//        modifier = Modifier.fillMaxWidth(),
-//        containerColor = MaterialTheme.colorScheme.primary
-//    ) {
-//        Text(
-//            text = weather?.let {
-//                "📍 ${it.city} - 🌡️ ${it.currentWeather.temperature}°C"
-//            } ?: "Cargando clima...",
-//            modifier = Modifier.padding(16.dp),
-//            color = MaterialTheme.colorScheme.onPrimary
-//        )
-//    }
-//}
-
-
-
-
-
-
-
 
 
 //Funcion encargada de mostrar una imagen
