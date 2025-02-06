@@ -7,3 +7,9 @@ plugins {
     id("androidx.room") version "2.6.1" apply false
     id("com.google.dagger.hilt.android") version "2.51.1" apply false
 }
+
+buildscript {
+    dependencies {
+        classpath ("com.google.dagger:hilt-android-gradle-plugin:2.51.1")
+    }
+}

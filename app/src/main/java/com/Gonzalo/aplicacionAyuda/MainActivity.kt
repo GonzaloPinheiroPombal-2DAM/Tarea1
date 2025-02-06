@@ -24,6 +24,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,38 +34,21 @@ import com.Gonzalo.aplicacionAyuda.data.network.WheatherApiService
 import com.Gonzalo.aplicacionAyuda.ui.screens.mainScreen.MainScreenViewModel
 import com.Gonzalo.aplicacionAyuda.ui.screens.mainScreen.PantallaPrincipal
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType
 import retrofit2.Retrofit
 
 
+
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private lateinit var viewModel: MainScreenViewModel
-    //private val viewModel: MainViewModel by viewModels()
 
-//    override fun onCreate(savedInstanceState: Bundle?) {
-        //super.onCreate(savedInstanceState)
-
-//        enableEdgeToEdge()
-//        setContent {
-//            var nombres by remember { mutableStateOf(emptyList<String>()) }
-//            LaunchedEffect(Unit) {
-//                nombres = leerNombresContactosBDRoom()
-//            }
-//            PantallaPrincipal(nombres)
-//        }
-//        leerMainUserBDRoom()
-
-
-//    }
+    private val viewModel: MainScreenViewModel by viewModels() // Hilt inyecta el ViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        viewModel = MainScreenViewModel(applicationContext)
-
-//        viewModel.agregarContacto("Hola", 123456987, "Nowhere")
 
         enableEdgeToEdge()
         setContent {
