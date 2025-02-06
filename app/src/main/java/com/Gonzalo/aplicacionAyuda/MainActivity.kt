@@ -5,10 +5,11 @@
 //Modificada la estructura del proyecto(Agregada carpeta screens + sus viewModels)
 //Agregadas dependencias hilt
 //Agregado viewModel para el mainScreen con su logica
+//Usar retrofit con una api
 
 
 //Falta
-//Usar retrofit con una api
+//Implementar ver el tiempo
 //Dar uso a hilt
 
 
@@ -22,45 +23,18 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.Image
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.foundation.layout.size
-import androidx.room.Room
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.Gonzalo.aplicacionAyuda.data.ContactData
-import com.Gonzalo.aplicacionAyuda.data.MainUser
-import com.Gonzalo.aplicacionAyuda.data.mainUserDataBase
-import com.Gonzalo.aplicacionAyuda.ui.MainViewModel
+import com.Gonzalo.aplicacionAyuda.data.network.WheatherApiService
 import com.Gonzalo.aplicacionAyuda.ui.screens.mainScreen.MainScreenViewModel
 import com.Gonzalo.aplicacionAyuda.ui.screens.mainScreen.PantallaPrincipal
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType
+import retrofit2.Retrofit
 
 
 class MainActivity : ComponentActivity() {
@@ -107,6 +81,28 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+
+        val json = Json{
+            ignoreUnknownKeys = true
+        }
+
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://api.open-meteo.com/")
+            .addConverterFactory(json.asConverterFactory(MediaType.get("application/json")))
+            .build()
+
+
+        val service = retrofit.create(WheatherApiService::class.java)
+
+        runBlocking {
+            //val wheather = service.getWeather(40.4168, -3.7038) //Madrid
+            val wheather = service.getWeather(42.2314, -8.7124) //Vigo
+            Log.d("Wheather", "$wheather")
+        }
+
+
+
+
         Log.d("Ciclo de vida", "llamado a onResume()")
     }
 
