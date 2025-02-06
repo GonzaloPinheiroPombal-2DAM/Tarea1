@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
-    //id("androidx.room")
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -66,9 +66,17 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    //Dependecias room (Parte 2)
+    //Dependecias room
     val room_version = "2.6.1"
 
     implementation("androidx.room:room-runtime:$room_version")
     annotationProcessor("androidx.room:room-compiler:$room_version")
+
+
+    //Hilt
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
+
+    //Retrofit
+    implementation (libs.retrofit)
 }
