@@ -1,5 +1,6 @@
 package com.Gonzalo.aplicacionAyuda.ui.screens.mainScreen
 
+import android.util.Log
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
@@ -13,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedButton
@@ -25,6 +27,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,12 +39,19 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.Gonzalo.aplicacionAyuda.R
+import com.Gonzalo.aplicacionAyuda.data.network.WheatherApiService
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType
+import retrofit2.Retrofit
 
 //Función encargada de mostrar todo el contenido de la pestaña principal
 @Composable
-fun PantallaPrincipal(contactNames: List<String>) {
+fun PantallaPrincipal(contactNames: List<String>, viewModel: MainScreenViewModel) {
     Scaffold(
         topBar = { barraSuperior { it } },
+        bottomBar = { MostrarTiempo(viewModel) },
         content = { innerPadding ->
 
             //Contenido principal
@@ -53,6 +63,8 @@ fun PantallaPrincipal(contactNames: List<String>) {
                         .fillMaxWidth()
                 )
                 listaLazy(names = contactNames)
+
+
             }
         }
     )
@@ -109,6 +121,29 @@ fun barraSuperior(onOptionSelected: (String) -> Unit) {
     )
 }
 
+@Composable
+fun MostrarTiempo(viewModel: MainScreenViewModel) {
+
+    val weatherToShow by viewModel.weatherState.collectAsState()
+
+    // Mostrar la temperatura en una BottomBar
+    BottomAppBar(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
+    containerColor = MaterialTheme.colorScheme.primary
+
+    ) {
+        Text(
+            text = weatherToShow,
+            modifier = Modifier.padding(16.dp),
+            color = MaterialTheme.colorScheme.onPrimary,
+            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold)
+        )
+    }
+}
+
+
 
 
 
@@ -134,6 +169,32 @@ fun cuadroLista(name: String, modifier: Modifier = Modifier) {
         }
     }
 }
+
+
+//@Composable
+//fun MostrarTiempo(viewModel: MainScreenViewModel) {
+//    val weather by viewModel.weatherState.collectAsState(initial = null)
+//
+//    BottomAppBar(
+//        modifier = Modifier.fillMaxWidth(),
+//        containerColor = MaterialTheme.colorScheme.primary
+//    ) {
+//        Text(
+//            text = weather?.let {
+//                "📍 ${it.city} - 🌡️ ${it.currentWeather.temperature}°C"
+//            } ?: "Cargando clima...",
+//            modifier = Modifier.padding(16.dp),
+//            color = MaterialTheme.colorScheme.onPrimary
+//        )
+//    }
+//}
+
+
+
+
+
+
+
 
 
 //Funcion encargada de mostrar una imagen

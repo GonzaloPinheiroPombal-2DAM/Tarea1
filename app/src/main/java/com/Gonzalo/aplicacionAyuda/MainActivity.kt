@@ -5,12 +5,13 @@
 //Modificada la estructura del proyecto(Agregada carpeta screens + sus viewModels)
 //Agregadas dependencias hilt
 //Agregado viewModel para el mainScreen con su logica
-//Usar retrofit con una api
+//Usar retrofit con una api y mostrarlo
 
 
 //Falta
-//Implementar ver el tiempo
 //Dar uso a hilt
+//Añadir un boton para añadir usuario
+//Borro los .kt de sqlite?
 
 
 
@@ -25,6 +26,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.Gonzalo.aplicacionAyuda.data.network.WheatherApiService
@@ -60,8 +62,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-
-
         viewModel = MainScreenViewModel(applicationContext)
 
 //        viewModel.agregarContacto("Hola", 123456987, "Nowhere")
@@ -69,7 +69,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val datosContactos by viewModel.contactNames.collectAsState(initial = emptyList())
-            PantallaPrincipal(datosContactos)
+            PantallaPrincipal(datosContactos, viewModel)
         }
     }
 
@@ -81,28 +81,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-
-        val json = Json{
-            ignoreUnknownKeys = true
-        }
-
-        val retrofit = Retrofit.Builder()
-            .baseUrl("https://api.open-meteo.com/")
-            .addConverterFactory(json.asConverterFactory(MediaType.get("application/json")))
-            .build()
-
-
-        val service = retrofit.create(WheatherApiService::class.java)
-
-        runBlocking {
-            //val wheather = service.getWeather(40.4168, -3.7038) //Madrid
-            val wheather = service.getWeather(42.2314, -8.7124) //Vigo
-            Log.d("Wheather", "$wheather")
-        }
-
-
-
-
         Log.d("Ciclo de vida", "llamado a onResume()")
     }
 
@@ -202,5 +180,13 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
 //@Preview
 //@Composable
 //fun vistaPrevia(){
-//    PantallaPrincipal()
+//    lateinit var viewModel: MainScreenViewModel
+//    viewModel = MainScreenViewModel(applicationContext)
+//
+//    val datosContactos by viewModel.contactNames.collectAsState(initial = emptyList())
+//
+//    PantallaPrincipal(datosContactos, viewModel)
 //}
+
+
+

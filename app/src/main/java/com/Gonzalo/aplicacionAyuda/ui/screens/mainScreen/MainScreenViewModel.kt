@@ -10,10 +10,15 @@ import com.Gonzalo.aplicacionAyuda.MIGRATION_3_4
 import com.Gonzalo.aplicacionAyuda.data.ContactData
 import com.Gonzalo.aplicacionAyuda.data.MainUser
 import com.Gonzalo.aplicacionAyuda.data.mainUserDataBase
+import com.Gonzalo.aplicacionAyuda.data.network.WheatherApiService
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType
+import retrofit2.Retrofit
 
 class MainScreenViewModel (context: Context) : ViewModel(){
 
@@ -33,13 +38,43 @@ class MainScreenViewModel (context: Context) : ViewModel(){
     val contactNames: StateFlow<List<String>> = _contactNames
 
 
+    // Flow para actualizar los datos del clima
+    private val _weatherState = MutableStateFlow<String>("Loading wheather")
+    val weatherState: StateFlow<String> = _weatherState
+
+    // Uso retrofit para obtener el clima
+    private val json = Json {
+        ignoreUnknownKeys = true
+    }
+
+    private val retrofit = Retrofit.Builder()
+        .baseUrl("https://api.open-meteo.com/")
+        .addConverterFactory(json.asConverterFactory(MediaType.get("application/json")))
+        .build()
+    private val weatherService = retrofit.create(WheatherApiService::class.java)
+
+
+
     //Guardo los contactos nuevos en la bd
     init {
         leerNombresContactosBDRoom()
+        fetchWeather(42.2314, -8.7124) // Vigo
     }
     private fun leerNombresContactosBDRoom() {
         viewModelScope.launch(Dispatchers.IO) {
             _contactNames.value = contactDao.getAllContactNames()
+        }
+    }
+    fun fetchWeather(lat: Double, lon: Double) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val weather = weatherService.getWeather(lat, lon)
+                _weatherState.value = "📍 Vigo - 🌡️ ${weather.currentWeather.temperature}°C"
+                Log.d("Weather", _weatherState.value)
+            } catch (e: Exception) {
+                _weatherState.value = "Error obteniendo clima"
+                Log.e("Weather", "Error: ${e.message}")
+            }
         }
     }
 
