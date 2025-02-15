@@ -69,19 +69,15 @@ interface ContactDataDao {
     @Query("DELETE FROM contact_data WHERE id = :contactId")
     fun deleteContactById(contactId: Int)
 
+    //Elimina todos los contactos
+    @Query("DELETE FROM contact_data")
+    fun deleteAllContacts()
+
     //Insertar (crear) un nuevo contacto
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertContact(contact: ContactData)
 }
 
-
-
-//@Database(version = 4, entities = [MainUser::class])
-//abstract class mainUserDataBase : RoomDatabase(){
-//    abstract fun userDao(): MainUserDao
-//    abstract fun ContactDataDao(): ContactDataDao
-//
-//}
 
 @Database(version = 4, entities = [MainUser::class, ContactData::class])
 abstract class mainUserDataBase : RoomDatabase(){

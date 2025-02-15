@@ -4,9 +4,10 @@ package com.Gonzalo.aplicacionAyuda.ui.screens.mainScreen
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.Gonzalo.aplicacionAyuda.data.ContactData
-import com.Gonzalo.aplicacionAyuda.data.mainUserDataBase
-import com.Gonzalo.aplicacionAyuda.data.network.WheatherApiService
+import com.Gonzalo.aplicacionAyuda.domain.InsertContactUseCase
+import com.Gonzalo.aplicacionAyuda.domain.WheatherApiServiceUseCase
+import com.Gonzalo.aplicacionAyuda.domain.deleteAllContactsUseCase
+import com.Gonzalo.aplicacionAyuda.domain.getContactsNames
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,8 +19,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainScreenViewModel @Inject constructor(
-    private val db: mainUserDataBase, // Inyección de la BD
-    private val weatherService: WheatherApiService // Inyección de Retrofit
+    private val dbGetContactsNames: getContactsNames,
+    private val dbInsertContact: InsertContactUseCase,
+    private val dbDeleteAllContacts: deleteAllContactsUseCase,
+    private val getWeatherService: WheatherApiServiceUseCase // useCase
 ) : ViewModel() {
 
 
@@ -37,16 +40,19 @@ class MainScreenViewModel @Inject constructor(
         fetchWeather(42.2314, -8.7124) // Vigo
     }
 
+
     private fun leerNombresContactosBDRoom() {
         viewModelScope.launch(Dispatchers.IO) {
-            _contactNames.value = db.contactDataDao().getAllContactNames()
+            //_contactNames.value = db.contactDataDao().getAllContactNames()
+            _contactNames.value = dbGetContactsNames.invoke()
         }
     }
 
     fun fetchWeather(lat: Double, lon: Double) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val weather = weatherService.getWeather(lat, lon)
+                //val weather = weatherService.getWeather(lat, lon)
+                val weather = getWeatherService.invoke(lat, lon) //Ahora uso useCase
                 _weatherState.value = "📍 Vigo - 🌡️ ${weather.currentWeather.temperature}°C"
                 Log.d("Weather", _weatherState.value)
             } catch (e: Exception) {
@@ -59,14 +65,17 @@ class MainScreenViewModel @Inject constructor(
     // Agregar un nuevo contacto
     fun agregarContacto(contactName: String, contactTelephone: Int, contactNationality: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val nuevoContacto = ContactData(
-                contactName = contactName,
-                contactTelephone = contactTelephone,
-                contactNationality = contactNationality
-            )
-            db.contactDataDao().insertContact(nuevoContacto)
+            dbInsertContact.insertContact(contactName, contactTelephone, contactNationality)
             leerNombresContactosBDRoom() // Actualiza la lista
             Log.d("RoomDBContact", "Contacto insertado en Room")
+        }
+    }
+
+    fun deleteAllContacts(){
+        viewModelScope.launch(Dispatchers.IO) {
+            dbDeleteAllContacts.deleteContacts()
+            leerNombresContactosBDRoom() // Actualiza la lista
+            Log.d("RoomDBContact", "Eliminados todos los contactos")
         }
     }
 }

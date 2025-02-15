@@ -45,10 +45,10 @@ fun PantallaPrincipal(contactNames: List<String>, viewModel: MainScreenViewModel
     Scaffold(
         topBar = { barraSuperior(viewModel) { it } },
         bottomBar = { MostrarTiempo(viewModel) },
-        content = { innerPadding ->
+        content = { paddingValues ->
 
             //Contenido principal
-            Column(modifier = Modifier.padding(innerPadding)) {
+            Column(modifier = Modifier.padding(paddingValues)) {
                 Text(
                     text = "A continuación encontrarás los futuros chats de la aplicación",
                     modifier = Modifier
@@ -56,15 +56,13 @@ fun PantallaPrincipal(contactNames: List<String>, viewModel: MainScreenViewModel
                         .fillMaxWidth()
                 )
                 listaLazy(names = contactNames)
-
-
             }
         }
     )
 }
 
 
-//Funcion encargada de trabajar con una lista de 20 objetos cuadroLista "chats"
+//Funcion encargada de trabajar con una lista
 @Composable
 fun listaLazy(modifier: Modifier = Modifier, names: List<String>) {
     LazyColumn(modifier = modifier.padding(vertical = 4.dp)) {
@@ -92,10 +90,11 @@ fun barraSuperior(viewModel: MainScreenViewModel, onOptionSelected: (String) -> 
                 onDismissRequest = { expanded = false }
             ) {
                 DropdownMenuItem(
-                    text = { Text("Perfil") },
+                    text = { Text("Eliminar contactos") },
                     onClick = {
                         expanded = false
-                        onOptionSelected("Opción 1")
+//                        onOptionSelected("Opción 1")
+                        viewModel.deleteAllContacts()
                     }
                 )
                 DropdownMenuItem(
@@ -112,6 +111,8 @@ fun barraSuperior(viewModel: MainScreenViewModel, onOptionSelected: (String) -> 
         }
     )
 }
+
+
 
 @Composable
 fun MostrarTiempo(viewModel: MainScreenViewModel) {
@@ -142,7 +143,9 @@ fun MostrarTiempo(viewModel: MainScreenViewModel) {
 //Funcion encargada de mostrar cada uno de los "chats"
 @Composable
 fun cuadroLista(name: String, modifier: Modifier = Modifier) {
-    var expanded = rememberSaveable(){ mutableStateOf(false) } //Val encargado de guardar el estado si pulsado o no
+    //var expanded = rememberSaveable(){ mutableStateOf(false) } //Val encargado de guardar el estado si pulsado o no
+    var expanded = rememberSaveable{ mutableStateOf(false) } //Val encargado de guardar el estado si pulsado o no
+
 
     //Enseñar mas - con animación
     val extraPadding by animateDpAsState(if(expanded.value) 48.dp else 0.dp, animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow))

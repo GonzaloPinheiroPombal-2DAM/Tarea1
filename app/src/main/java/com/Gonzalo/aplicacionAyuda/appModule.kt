@@ -29,7 +29,7 @@ object AppModule {
             mainUserDataBase::class.java,
             "mainUserDB"
         )
-            .addMigrations(MIGRATION_2_4, MIGRATION_3_4, MIGRATION_2_4)
+            .addMigrations(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_2_4)
             .build()
     }
 

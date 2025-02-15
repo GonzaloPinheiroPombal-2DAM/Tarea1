@@ -1,19 +1,10 @@
-//Tarea 4 Gonzalo Piñeiro Pombal
+//Tarea 5 Gonzalo Piñeiro Pombal
 
 
 //Cambios realizados:
-//Modificada la estructura del proyecto(Agregada carpeta screens y sus viewModels + carptas necesarias hilt)
-//Agregadas dependencias
-//Agregado viewModel para el mainScreen con su logica
-//Usar retrofit con una api y mostrarlo dentro del viewmodel
-//Dar uso a hilt
-//Añadir un boton para añadir usuario
-
-
-//Falta
-//Borro los .kt de sqlite?
-
-
+//Creados repositorios para api + bd
+//Creados use case
+//Añadida opcion de elimianar todos los contactos
 
 
 
@@ -42,7 +33,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        enableEdgeToEdge()
+//        enableEdgeToEdge()
         setContent {
             val datosContactos by viewModel.contactNames.collectAsState(initial = emptyList())
             PantallaPrincipal(datosContactos, viewModel)
@@ -165,20 +156,5 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
         // No hay cambios en la estructura
     }
 }
-
-
-
-
-//@Preview
-//@Composable
-//fun vistaPrevia(){
-//    lateinit var viewModel: MainScreenViewModel
-//    viewModel = MainScreenViewModel(applicationContext)
-//
-//    val datosContactos by viewModel.contactNames.collectAsState(initial = emptyList())
-//
-//    PantallaPrincipal(datosContactos, viewModel)
-//}
-
 
 
